@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chúc mừng 20/10</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Canvas pháo hoa nền -->
+        <canvas id="fireworksCanvas" aria-hidden="true"></canvas>
+        <!-- Hoa hồng trang trí nền -->
+        <div class="roses-background">
+            <div class="rose rose-1">🌹</div>
+            <div class="rose rose-2">🌹</div>
+            <div class="rose rose-3">🌹</div>
+            <div class="rose rose-4">🌹</div>
+            <div class="rose rose-5">🌹</div>
+            <div class="rose rose-6">🌹</div>
+            <div class="rose rose-7">🌹</div>
+            <div class="rose rose-8">🌹</div>
+        </div>
+        
+        <!-- Phong bì -->
+        <div class="envelope" id="envelope">
+            <div class="envelope-front">
+                <div class="envelope-flap"></div>
+                <div class="envelope-body"></div>
+                <div class="envelope-bottom"></div>
+            </div>
+            <div class="envelope-back"></div>
+            <div class="click-text">Bấm vào phong bì</div>
+            
+            <!-- Cupid bay với biển hướng dẫn -->
+            <div class="cupid-container">
+                <div class="cupid">🧚‍♀️</div>
+                <div class="cupid-sign">
+                    <div class="sign-text">💥 Bấm vào màn hình để nổ pháo hoa và trái tim</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trang thứ 2 - Ảnh -->
+        <div class="content" id="content">
+            <div class="center-card">
+                <!-- Vòng ảnh xung quanh -->
+                <div class="images-ring" id="imagesRing"></div>
+                
+                <!-- Nút trái tim ở giữa -->
+                <div class="heart-button" id="heartButton">
+                    <div class="heart">💖</div>
+                    <div class="heart-text">Bấm để xem lời chúc</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trang thứ 3 - Lời chúc -->
+        <div class="message-page" id="messagePage">
+            <div class="message-card">
+                <div class="message">
+                    <h1>Chúc mừng 20/10!</h1>
+                    <div class="special-name">Nguyễn Thu Trang</div>
+                    <p class="typewriter-text">Chúc bạn Nguyễn Thu Trang ngày phụ nữ Việt Nam luôn xinh đẹp, tươi cười như cười tươi và sống khỏe như cây xương rồng</p>
+                    <div class="date-text">20/10/2025</div>
+                </div>
+                
+                <!-- Emoji trang trí -->
+                <div class="decorative-emojis">
+                    <div class="emoji emoji-1">🌸</div>
+                    <div class="emoji emoji-2">💖</div>
+                    <div class="emoji emoji-3">✨</div>
+                    <div class="emoji emoji-4">🌺</div>
+                    <div class="emoji emoji-5">🌹</div>
+                    <div class="emoji emoji-6">💕</div>
+                    <div class="emoji emoji-7">🌟</div>
+                    <div class="emoji emoji-8">🌼</div>
+                </div>
+                
+                <!-- Confetti -->
+                <div class="confetti-container" id="confettiContainer"></div>
+                
+                <!-- Canvas pháo hoa số 7 cho trang 3 -->
+                <canvas id="sevensCanvas" aria-hidden="true"></canvas>
+            </div>
+            
+            <!-- Sticker bên ngoài khung chúc -->
+            <div class="outer-stickers">
+                <div class="sticker sticker-1">🎀</div>
+                <div class="sticker sticker-2">💐</div>
+                <div class="sticker sticker-3">🎁</div>
+                <div class="sticker sticker-4">🦋</div>
+                <div class="sticker sticker-5">🌷</div>
+                <div class="sticker sticker-6">💝</div>
+                <div class="sticker sticker-7">🦄</div>
+                <div class="sticker sticker-8">🌻</div>
+                <div class="sticker sticker-9">🎈</div>
+                <div class="sticker sticker-10">🦋</div>
+                <div class="sticker sticker-11">🌺</div>
+                <div class="sticker sticker-12">🎀</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fireworks background
+        (function() {
+            const canvas = document.getElementById('fireworksCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let dpr = Math.max(1, window.devicePixelRatio || 1);
+            function resize() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = Math.floor(rect.width * dpr);
+                canvas.height = Math.floor(rect.height * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            const ro = new ResizeObserver(resize);
+            ro.observe(canvas);
+            resize();
+
+            const GRAVITY = 0.06;
+            const FRICTION = 0.99;
+            const COLORS = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d9de0', '#ff8e8e', '#e056fd'];
+            const particles = [];
+
+            function random(min, max) { return Math.random() * (max - min) + min; }
+
+            function burst(x, y, color) {
+                const count = 30; // Giảm số hạt để giảm lag
+                for (let i = 0; i < count; i++) {
+                    const angle = (Math.PI * 2 * i) / count + random(-0.1, 0.1);
+                    const speed = random(2, 5); // Giảm tốc độ
+                    particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: random(40, 70), // Giảm thời gian sống
+                        color,
+                        size: random(2, 4) // Giảm kích thước
+                    });
+                }
+            }
+
+            let lastSpawn = 0;
+            function spawnIfNeeded(t) {
+                if (t - lastSpawn > 4000) { // Mỗi 4 giây nổ 1 lần (giảm lag)
+                    lastSpawn = t;
+                    const x = random(60, canvas.width / dpr - 60);
+                    const y = random(80, canvas.height / dpr / 2);
+                    // Chỉ bắn 1 pháo hoa (giảm số hạt)
+                    burst(x, y, COLORS[(Math.random() * COLORS.length) | 0]);
+                }
+            }
+
+            function step(t) {
+                spawnIfNeeded(t || 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.vx *= FRICTION;
+                    p.vy = p.vy * FRICTION + GRAVITY;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= 1;
+                    if (p.life <= 0) { particles.splice(i, 1); continue; }
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
+                    grad.addColorStop(0, 'rgba(255,255,255,1)');
+                    grad.addColorStop(0.2, p.color);
+                    grad.addColorStop(0.6, p.color + '80');
+                    grad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                    
+                    // Thêm ánh sáng xung quanh
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+                    const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
+                    glow.addColorStop(0, p.color + '40');
+                    glow.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = glow;
+                    ctx.fill();
+                }
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+
+            // Bonus: bắn theo click/tap - ngẫu nhiên pháo hoa hoặc trái tim
+            window.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left);
+                const y = (e.clientY - rect.top);
+                
+                // 50% cơ hội nổ pháo hoa, 50% cơ hội nổ trái tim
+                if (Math.random() < 0.5) {
+                    // Nổ pháo hoa
+                    burst(x, y, COLORS[(Math.random() * COLORS.length) | 0]);
+                } else {
+                    // Nổ trái tim
+                    burstHearts(x, y);
+                }
+            }, { passive: true });
+            
+            // Hàm nổ trái tim
+            function burstHearts(x, y) {
+                const heartCount = 20;
+                const heartEmojis = ['💖', '💕', '💗', '💝', '💘', '💓'];
+                
+                for (let i = 0; i < heartCount; i++) {
+                    const angle = (Math.PI * 2 * i) / heartCount + random(-0.1, 0.1);
+                    const speed = random(2, 5);
+                    const heart = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+                    
+                    // Tạo trái tim bay
+                    const heartEl = document.createElement('div');
+                    heartEl.textContent = heart;
+                    heartEl.style.position = 'fixed';
+                    heartEl.style.left = x + 'px';
+                    heartEl.style.top = y + 'px';
+                    heartEl.style.fontSize = '2rem';
+                    heartEl.style.pointerEvents = 'none';
+                    heartEl.style.zIndex = '1000';
+                    heartEl.style.filter = 'drop-shadow(0 0 10px rgba(255, 105, 180, 0.8))';
+                    document.body.appendChild(heartEl);
+                    
+                    // Animation trái tim bay
+                    const vx = Math.cos(angle) * speed;
+                    const vy = Math.sin(angle) * speed - 2; // Bay lên
+                    let px = x, py = y;
+                    let life = 60;
+                    
+                    const animateHeart = () => {
+                        px += vx;
+                        py += vy;
+                        life--;
+                        
+                        heartEl.style.left = px + 'px';
+                        heartEl.style.top = py + 'px';
+                        heartEl.style.opacity = life / 60;
+                        heartEl.style.transform = `scale(${life / 60})`;
+                        
+                        if (life > 0) {
+                            requestAnimationFrame(animateHeart);
+                        } else {
+                            document.body.removeChild(heartEl);
+                        }
+                    };
+                    requestAnimationFrame(animateHeart);
+                }
+            }
+        })();
+
+        // Chỉnh sửa danh sách tên ảnh cho trùng với file bạn đã thêm trong folder assets
+        const imageFileNames = [
+            'img1.jpg',
+            'img2.jpg',
+            'img3.jpg',
+            'img4.jpg',
+            'img5.jpg'
+        ];
+
+        // Render ảnh vào vòng ảnh
+        const imagesRingEl = document.getElementById('imagesRing');
+        if (imagesRingEl) {
+            imagesRingEl.innerHTML = imageFileNames.map((name, index) => {
+                const alt = `Ảnh ${index + 1}`;
+                return `<img src="assets/${name}" alt="${alt}">`;
+            }).join('');
+        }
+
+        document.getElementById('envelope').addEventListener('click', function() {
+            const envelope = document.getElementById('envelope');
+            const content = document.getElementById('content');
+            
+            // Ẩn phong bì và hiện nội dung
+            envelope.style.transform = 'translateY(-100vh)';
+            envelope.style.opacity = '0';
+            
+            setTimeout(() => {
+                envelope.style.display = 'none';
+                content.style.display = 'block';
+                content.style.animation = 'fadeInUp 1s ease-out';
+            }, 500);
+        });
+
+        // Chuyển từ trang 2 sang trang 3
+        document.getElementById('heartButton').addEventListener('click', function() {
+            const content = document.getElementById('content');
+            const messagePage = document.getElementById('messagePage');
+            const rosesBackground = document.querySelector('.roses-background');
+            
+            // Ẩn trang 2 và hoa hồng nền
+            content.style.transform = 'translateY(-100vh)';
+            content.style.opacity = '0';
+            if (rosesBackground) {
+                rosesBackground.style.display = 'none';
+            }
+            
+            setTimeout(() => {
+                content.style.display = 'none';
+                messagePage.style.display = 'block';
+                messagePage.style.animation = 'fadeInUp 1s ease-out';
+                
+                // Khởi tạo pháo hoa số 7 cho trang 3
+                initSevensFireworks();
+                
+                // Khởi tạo confetti
+                createConfetti();
+                
+                // Khởi tạo typewriter effect
+                startTypewriter();
+            }, 500);
+        });
+
+        // Pháo hoa số 7 cho trang 3
+        function initSevensFireworks() {
+            const canvas = document.getElementById('sevensCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let dpr = Math.max(1, window.devicePixelRatio || 1);
+            function resize() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = Math.floor(rect.width * dpr);
+                canvas.height = Math.floor(rect.height * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            const ro = new ResizeObserver(resize);
+            ro.observe(canvas);
+            resize();
+
+            const GRAVITY = 0.05;
+            const FRICTION = 0.98;
+            const sevens = [];
+
+            function random(min, max) { return Math.random() * (max - min) + min; }
+
+            function burstSevens(x, y) {
+                const count = 20; // Tăng số lượng
+                for (let i = 0; i < count; i++) {
+                    const angle = (Math.PI * 2 * i) / count + random(-0.1, 0.1);
+                    const speed = random(3, 6); // Tăng tốc độ
+                    sevens.push({
+                        x, y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: random(80, 120), // Tăng thời gian sống
+                        rotation: random(0, Math.PI * 2),
+                        rotationSpeed: random(-0.15, 0.15), // Tăng tốc độ xoay
+                        size: random(2.5, 4) // Thêm kích thước ngẫu nhiên
+                    });
+                }
+            }
+
+            let lastSpawn = 0;
+            function spawnSevens(t) {
+                if (t - lastSpawn > 3000) { // Mỗi 3 giây nổ 1 lần
+                    lastSpawn = t;
+                    const x = random(100, canvas.width / dpr - 100);
+                    const y = random(100, canvas.height / dpr - 100);
+                    burstSevens(x, y);
+                }
+            }
+
+            function step(t) {
+                spawnSevens(t || 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = sevens.length - 1; i >= 0; i--) {
+                    const s = sevens[i];
+                    s.vx *= FRICTION;
+                    s.vy = s.vy * FRICTION + GRAVITY;
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    s.rotation += s.rotationSpeed;
+                    s.life -= 1;
+                    if (s.life <= 0) { sevens.splice(i, 1); continue; }
+                    
+                    ctx.save();
+                    ctx.translate(s.x, s.y);
+                    ctx.rotate(s.rotation);
+                    
+                    // Tạo gradient rực rỡ
+                    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, s.size * 20);
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${s.life / 120})`);
+                    gradient.addColorStop(0.3, `rgba(255, 107, 107, ${s.life / 120})`);
+                    gradient.addColorStop(0.7, `rgba(255, 0, 0, ${s.life / 120})`);
+                    gradient.addColorStop(1, `rgba(255, 107, 107, ${s.life / 120})`);
+                    
+                    // Vẽ bóng đổ
+                    ctx.shadowColor = 'rgba(255, 107, 107, 0.8)';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    
+                    // Font to hơn và rực rỡ hơn
+                    ctx.font = `bold ${s.size}rem Arial`;
+                    ctx.fillStyle = gradient;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('7', 0, 0);
+                    
+                    // Thêm viền sáng
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${s.life / 120 * 0.8})`;
+                    ctx.lineWidth = 2;
+                    ctx.strokeText('7', 0, 0);
+                    
+                    ctx.restore();
+                }
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Confetti effect
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d9de0', '#ff8e8e', '#e056fd'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.borderRadius = '50%';
+                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+                container.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 5000);
+            }
+        }
+
+        // Typewriter effect
+        function startTypewriter() {
+            const text = document.querySelector('.typewriter-text');
+            const fullText = text.textContent;
+            text.textContent = '';
+            text.style.borderRight = '2px solid #ff6b6b';
+            
+            let i = 0;
+            const typeInterval = setInterval(() => {
+                text.textContent += fullText[i];
+                i++;
+                if (i >= fullText.length) {
+                    clearInterval(typeInterval);
+                    text.style.borderRight = 'none';
+                }
+            }, 50);
+        }
+    </script>
+</body>
+</html>
