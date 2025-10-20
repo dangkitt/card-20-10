@@ -48,7 +48,7 @@ body {
 
 .rose {
     position: absolute;
-    font-size: 10rem;
+    font-size: 4rem;
     opacity: 0.6;
     animation: bloom 2s ease-out, sway 3s ease-in-out 2s infinite;
     filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
@@ -690,3 +690,4 @@ body {
     }
     
 }
+
